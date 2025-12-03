@@ -289,15 +289,34 @@ namespace Mapster
         /// <typeparam name="TSource">Source type.</typeparam>
         /// <typeparam name="TDestination">Destination type.</typeparam>
         /// <param name="source">Source object to adapt.</param>
-        /// <param name="configAction">Action to customize the TypeAdapterSetter.</param>
+        /// <param name="setterAction">Action to customize the TypeAdapterSetter.</param>
         /// <returns>Adapted destination object of type TDestination.</returns>
-        public static TDestination Adapt<TSource, TDestination>(this object? source, Action<TypeAdapterSetter<TSource, TDestination>> configAction)
+        public static TDestination Adapt<TSource, TDestination>(this TSource? source, Action<TypeAdapterSetter<TSource, TDestination>> setterAction)
         {
             var config = TypeAdapterConfig.GlobalSettings.Clone();
             var setter = config.ForType<TSource, TDestination>();
-            configAction(setter);
+            setterAction(setter);
             setter.Settings.Resolvers.Reverse();
             return source.Adapt<TDestination>(config);
+        }
+
+        /// <summary>
+        /// Adapt the source object from TSource to TDestination using a dedicated TypeAdapterSetter.
+        /// A temporary TypeAdapterConfig is created and configured via the setter.
+        /// Safe for init-only properties and record types, without modifying GlobalSettings.
+        /// </summary>
+        /// <typeparam name="TSource">Source type.</typeparam>
+        /// <typeparam name="TDestination">Destination type.</typeparam>
+        /// <param name="source">Source object to adapt.</param>
+        /// <param name="SetterAction">Action to customize the TypeAdapterSetter.</param>
+        /// <returns>Adapted destination object of type TDestination.</returns>
+        public static TDestination Adapt<TSource, TDestination>(this object? source, TDestination destination, Action<TypeAdapterSetter<TSource, TDestination>> SetterAction)
+        {
+            var config = TypeAdapterConfig.GlobalSettings.Clone();
+            var setter = config.ForType<TSource, TDestination>();
+            SetterAction(setter);
+            setter.Settings.Resolvers.Reverse();
+            return Adapt(source, destination, config);
         }
     }
 

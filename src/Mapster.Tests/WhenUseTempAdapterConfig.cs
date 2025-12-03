@@ -6,6 +6,12 @@ namespace Mapster.Tests
 
     public record SourceDto(string Name, int Age);
     public record DestinationDto(long Id, string Name, int Age);
+    public class DestinationDto2
+    {
+        public long Id { get; set; }
+        public string Name { get; set; }
+        public int Age { get; set; }
+    }
 
     [TestClass]
     public class WhenUseTempAdapterConfig
@@ -47,6 +53,26 @@ namespace Mapster.Tests
             result.Name.ShouldBe("Bob");
             result.Age.ShouldBe(25);
             result.Id.ShouldBe(99);
+        }
+
+        [TestMethod]
+        public void Adapt_WithSetter_ShouldMapInitOnlyProperties2()
+        {
+            // Arrange
+            var source = new SourceDto("Bob", 25);
+            var dest = new DestinationDto2();
+            long id = 99;
+
+            // Act
+            source.Adapt<SourceDto, DestinationDto2>(dest, setter =>
+            {
+                setter.Map(dest => dest.Id, src => id);
+            });
+
+            // Assert
+            dest.Name.ShouldBe("Bob");
+            dest.Age.ShouldBe(25);
+            dest.Id.ShouldBe(99);
         }
 
         [TestMethod]
